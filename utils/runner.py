@@ -13,7 +13,7 @@ class Runner:
 
     def train(self):
         net = self.net
-        net.train()
+
         optimizer = self.optimizer
         trainloader = self.loaders[0]
 
@@ -29,6 +29,9 @@ class Runner:
         it = -1
         optimizer.zero_grad(set_to_none=True)
         scaler = torch.cuda.amp.GradScaler(enabled=use_scaler)
+
+        net.train()
+        net.to(dev)
 
         while it < total_iters:
 

@@ -23,6 +23,7 @@ class Runner:
         grad_accumulation = self.cfg.optimizer.grad_accumulation
         use_scaler = self.cfg.optimizer.use_scaler
         log_interval = self.cfg.log.log_interval
+        eval_interval = self.cfg.eval_interval
 
         # Initialize optimizer and net
         it = -1
@@ -55,12 +56,16 @@ class Runner:
                 if it % grad_accumulation == grad_accumulation - 1:
                     self.update_model(scaler, optimizer)
 
+                # Train loss logging
                 if it % log_interval  == 0:
                     self.log_train_loss(it, tr_loss, lr)
                     tr_loss = 0.0
                 else:
                     tr_loss += (loss.item() * grad_accumulation) / log_interval
 
+                # Evaluate model perplexity
+                if it % eval_interval == eval_interval - 1:
+                    self.evaluate_model(it, lr)
     
     def compute_loss(self, dat):
         net = self.net
@@ -93,6 +98,30 @@ class Runner:
         scaler.step(optimizer)
         scaler.update()
         optimizer.zero_grad(set_to_none=True)
+
+    def evaluate_model(self, it, lr):
+        net = self.net
+        dev = self.cfg.device
+        testloader = self.loaders[1]
+
+        # Compute perplexity
+        net.eval()
+
+        # calculate average perplexity
+        total_loss = 0.0
+        total_samples = 0.0
+        with torch.no_grad():
+            for dat in testloader:
+                dat = self.move_to_device(dat, dev)
+                logits = net(dat[:, :-1])
+                loss = F.cross_entropy(
+                    logits.view(-1, logits.size(-1)),
+                    dat[:, 1:].flatten())
+                total_loss += loss.item() * dat.size(0)
+                total_samples += dat.size(0)
+                import ipdb; ipdb.set_trace()
+
+        net.train()
 
     def log_train_loss(self, it, loss, lr):
         print(f'Iter {it} | Loss: {loss} | LR: {lr}')

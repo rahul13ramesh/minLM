@@ -57,13 +57,12 @@ class Runner:
                 # Update model
                 scaler.scale(loss).backward()
 
-                # Gradient clipping
-                if grad_clip > 0.0:
-                    scaler.unscale_(optimizer)
-                    torch.nn.utils.clip_grad_norm_(
-                        net.parameters(), grad_clip)
-
                 if it % grad_accumulation == grad_accumulation - 1:
+                    if grad_clip > 0.0:
+                        scaler.unscale_(optimizer)
+                        torch.nn.utils.clip_grad_norm_(
+                            net.parameters(), grad_clip)
+
                     scaler.step(optimizer)
                     scaler.update()
                     optimizer.zero_grad(set_to_none=True)

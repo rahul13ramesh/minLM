@@ -30,11 +30,12 @@ def open_log(cfg):
     print(cfg)
     os.makedirs('logs/' + cfg.tag, exist_ok=True)
     if cfg.deploy:
-        fname = 'logs/' + cfg.tag + '/' + wandb.run.id + ".log"
+        fname = 'logs/' + cfg.tag + '/' + cfg.run_name + ".log"
         fout = open(fname, "a", 1)
         sys.stdout = fout
         sys.stderr = fout
         print(cfg)
+        print(wandb.run.id)
         return fout
 
 

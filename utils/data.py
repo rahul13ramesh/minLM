@@ -44,6 +44,6 @@ def wikitext103_loader(cfg, train=True):
     ds.set_format(type='torch', columns=['input_ids'])
 
     loader = DataLoader(ds, batch_size=cfg.data.bs, shuffle=train,
-                          pin_memory=True, num_workers=4)
+                          pin_memory=True, num_workers=cfg.data.nworkers)
 
     return loader

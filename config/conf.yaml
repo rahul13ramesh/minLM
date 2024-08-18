@@ -10,7 +10,8 @@ data:
   bs: 32
   tokenizer: "openai-community/gpt2"
   subsample: 1.0
-  min_length: 20
+  min_len: 20
+  nworkers: 2
 
 net:
   compile: True
@@ -27,8 +28,11 @@ optimizer:
   weight_decay: 1e-1
   beta1: 0.9
   beta2: 0.95
+
   grad_clip: 1.0
   grad_accumulation: 20
+
+  ignore_eos: False
   use_scaler: True
 
   warmup_iters: 0
@@ -38,7 +42,7 @@ optimizer:
 log: 
   eval_interval: 5000
   log_interval: 500
-  save_interval: 25000
+  save_interval: 50000
 
  
 # Nested configs. Disable hydra logging

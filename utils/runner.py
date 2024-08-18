@@ -11,6 +11,14 @@ class Runner:
         self.loaders = loaders
         self.optimizer = opt
 
+        if cfg.optimizer.ignore_eos:
+            ignore_index = 50256  # ignore EOS token
+        else:
+            ignore_index = -100
+
+        self.criterion = torch.nn.CrossEntropyLoss(
+            ignore_index=ignore_index)
+
         if cfg.net.compile:
             self.net = torch.compile(net)
         else:
@@ -35,6 +43,7 @@ class Runner:
         # Initialize optimizer and net
         it = -1
         tr_loss = 0.0
+        epoch = 0.0
         optimizer.zero_grad(set_to_none=True)
         scaler = torch.GradScaler(dev, enabled=use_scaler)
 
@@ -42,6 +51,8 @@ class Runner:
         net.to(dev)
 
         while it < total_iters:
+            print(f'Epoch {epoch}')
+            epoch += 1
 
             for dat in trainloader:
                 if it >= total_iters:

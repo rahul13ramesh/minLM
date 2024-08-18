@@ -6,7 +6,6 @@ import math
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from net.rope import RotaryEmbedding, apply_rotary_pos_emb_torch
 
 
 class LayerNorm(nn.Module):
@@ -116,7 +115,7 @@ class nanoGPT(nn.Module):
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(cfg.vocab_size, cfg.n_embd),
-            wpe = nn.Embedding(cfg.block_size, cfg.n_embd),
+            wpe = nn.Embedding(cfg.context_size, cfg.n_embd),
             h = nn.ModuleList([Block(cfg) for _ in range(cfg.n_layer)]),
             ln_f = LayerNorm(cfg.n_embd, bias=cfg.bias),
         ))

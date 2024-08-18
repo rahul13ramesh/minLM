@@ -9,7 +9,7 @@ from utils.runner import Runner
 
 @hydra.main(config_path="./config", config_name="minconf.yaml", version_base="1.3")
 def main(cfg):
-    init_wandb(cfg, project_name="icl")
+    init_wandb(cfg, project_name="miniLM")
     set_seed(cfg.seed)
     fp = open_log(cfg)
 

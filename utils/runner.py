@@ -50,6 +50,8 @@ class Runner:
         net.train()
         net.to(dev)
 
+        self.evaluate_model(0)
+
         while it < total_iters:
             print(f'Epoch {epoch}')
             epoch += 1
@@ -83,7 +85,7 @@ class Runner:
 
                 # Evaluate model perplexity
                 if it % eval_interval == eval_interval - 1:
-                    self.evaluate_model(it+1, lr)
+                    self.evaluate_model(it+1)
 
                 if it % save_interval == 0:
                     self.save_model(it)
@@ -120,7 +122,7 @@ class Runner:
         scaler.update()
         optimizer.zero_grad(set_to_none=True)
 
-    def evaluate_model(self, it, lr):
+    def evaluate_model(self, it):
         net = self.net
         dev = self.cfg.device
         testloader = self.loaders[1]
@@ -152,7 +154,7 @@ class Runner:
         perplexity = torch.exp(torch.tensor(avg_loss)).item()
 
         net.train()
-        self.log_eval_perplexity(it, lr, perplexity)
+        self.log_eval_perplexity(it, perplexity)
 
         return perplexity
 
@@ -164,7 +166,7 @@ class Runner:
         if self.cfg.deploy:
             wandb.log({'train_loss': loss, 'lr': lr, 'iter': it})
 
-    def log_eval_perplexity(self, it, lr, perplexity):
+    def log_eval_perplexity(self, it, perplexity):
         print(f'Iter {it} | Perplexity: {perplexity}')
 
         if self.cfg.deploy:

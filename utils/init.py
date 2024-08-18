@@ -23,6 +23,8 @@ def set_seed(seed=0):
     torch.manual_seed(true_seed)
     torch.cuda.manual_seed_all(true_seed)
 
+    torch.set_float32_matmul_precision('high')
+
 
 def open_log(cfg):
     print(cfg)

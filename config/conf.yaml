@@ -10,6 +10,7 @@ data:
   bs: 32
   tokenizer: "openai-community/gpt2"
   subsample: 1.0
+  min_length: 20
 
 net:
   compile: True

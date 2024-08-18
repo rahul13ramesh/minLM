@@ -146,6 +146,8 @@ class Runner:
         return perplexity
 
     def log_train_loss(self, it, loss, lr):
+        if loss == 0.0:
+            loss = float("inf")
         print(f'Iter {it} | LR: {lr} | Loss: {loss}')
 
         if self.cfg.deploy:
@@ -162,4 +164,3 @@ class Runner:
             fpath = os.path.join('./checkpoints/', self.cfg.tag, self.cfg.run_name)
             os.makedirs(fpath, exist_ok=True)
             torch.save(self.net.state_dict(), fpath + f'/model_{it}.pth')
-

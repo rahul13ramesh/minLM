@@ -23,7 +23,7 @@ class Runner:
         grad_accumulation = self.cfg.optimizer.grad_accumulation
         use_scaler = self.cfg.optimizer.use_scaler
         log_interval = self.cfg.log.log_interval
-        eval_interval = self.cfg.eval_interval
+        eval_interval = self.cfg.log.eval_interval
 
         # Initialize optimizer and net
         it = -1
@@ -109,7 +109,7 @@ class Runner:
 
         # calculate average perplexity
         total_loss = 0.0
-        total_samples = 0.0
+        total_tokens = 0.0
         with torch.no_grad():
             for dat in testloader:
                 dat = self.move_to_device(dat, dev)
@@ -117,14 +117,27 @@ class Runner:
                 loss = F.cross_entropy(
                     logits.view(-1, logits.size(-1)),
                     dat[:, 1:].flatten())
-                total_loss += loss.item() * dat.size(0)
-                total_samples += dat.size(0)
-                import ipdb; ipdb.set_trace()
+
+                tokens = dat.size(0) * dat.size(1)
+                total_loss += loss.item() * tokens
+                total_tokens += tokens
+
+        avg_loss = total_loss / total_tokens
+        perplexity = torch.exp(torch.tensor(avg_loss)).item()
 
         net.train()
+        self.log_eval_perplexity(it, lr, perplexity)
+
+        return perplexity
 
     def log_train_loss(self, it, loss, lr):
-        print(f'Iter {it} | Loss: {loss} | LR: {lr}')
+        print(f'Iter {it} | LR: {lr} | Loss: {loss}')
 
         if self.cfg.deploy:
             wandb.log({'train_loss': loss, 'lr': lr, 'iter': it})
+
+    def log_eval_perplexity(self, it, lr, perplexity):
+        print(f'Iter {it} | Perplexity: {perplexity}')
+
+        if self.cfg.deploy:
+            wandb.log({'eval_perplexity': perplexity, 'iter': it})

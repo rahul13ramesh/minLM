@@ -5,12 +5,15 @@ from datasets import load_dataset
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
+
 def wikitext103_loader(cfg, train=True):
+    """
+    Get dataloader for wikitext-103
+    """
 
     split = "train" if train else "test"
-
     ds = load_dataset("Salesforce/wikitext", "wikitext-103-v1", split=split)
-
+    # To avoid hugginface error
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     tokenizer = AutoTokenizer.from_pretrained(cfg.data.tokenizer)
@@ -49,4 +52,3 @@ def wikitext103_loader(cfg, train=True):
                           pin_memory=True, num_workers=4)
 
     return loader
-

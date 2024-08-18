@@ -1,4 +1,5 @@
 import hydra 
+import torch
 from utils.init import init_wandb, set_seed, open_log, cleanup
 from utils.data import wikitext103_loader
 from utils.nanogpt import nanoGPT
@@ -6,7 +7,7 @@ from utils.optimizer import configure_optimizers
 from utils.runner import Runner
 
 
-@hydra.main(config_path="./config", config_name="conf.yaml", version_base="1.3")
+@hydra.main(config_path="./config", config_name="minconf.yaml", version_base="1.3")
 def main(cfg):
     init_wandb(cfg, project_name="icl")
     set_seed(cfg.seed)
@@ -21,7 +22,6 @@ def main(cfg):
 
     runner = Runner(cfg, net, opt, loaders)
     runner.train()
-
 
     cleanup(cfg, fp)
 

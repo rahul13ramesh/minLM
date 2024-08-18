@@ -1,0 +1,29 @@
+{'deploy': True, 'tag': 'minLM', 'run_name': 'run1', 'seed': 0, 'device': 'cuda:0', 'total_iters': 1000, 'data': {'bs': 32, 'tokenizer': 'openai-community/gpt2', 'subsample': 0.001}, 'net': {'compile': False, 'vocab_size': 50258, 'context_size': 512, 'n_layer': 1, 'n_head': 1, 'n_embd': 128, 'dropout': 0.0, 'bias': False}, 'optimizer': {'learning_rate': 0.0003, 'weight_decay': 0.1, 'beta1': 0.9, 'beta2': 0.95, 'grad_clip': 1.0, 'grad_accumulation': 20, 'use_scaler': True, 'warmup_iters': 0, 'decay_lr': True, 'min_lr': 3e-05}, 'log': {'eval_interval': 100, 'log_interval': 100, 'save_interval': 500}}
+Map:   0%|          | 0/851 [00:00<?, ? examples/s]Map: 100%|██████████| 851/851 [00:00<00:00, 3665.70 examples/s]Map: 100%|██████████| 851/851 [00:00<00:00, 3645.35 examples/s]
+Filter:   0%|          | 0/851 [00:00<?, ? examples/s]Filter: 100%|██████████| 851/851 [00:00<00:00, 6549.27 examples/s]Filter: 100%|██████████| 851/851 [00:00<00:00, 6516.18 examples/s]
+Map:   0%|          | 0/4358 [00:00<?, ? examples/s]Map:  23%|██▎       | 1000/4358 [00:00<00:00, 5597.53 examples/s]Map:  46%|████▌     | 2000/4358 [00:00<00:00, 5873.36 examples/s]Map:  69%|██████▉   | 3000/4358 [00:00<00:00, 5762.54 examples/s]Map:  92%|█████████▏| 4000/4358 [00:00<00:00, 5935.72 examples/s]Map: 100%|██████████| 4358/4358 [00:00<00:00, 5721.91 examples/s]
+Filter:   0%|          | 0/4358 [00:00<?, ? examples/s]Filter:  23%|██▎       | 1000/4358 [00:00<00:00, 6552.92 examples/s]Filter:  46%|████▌     | 2000/4358 [00:00<00:00, 6598.23 examples/s]Filter:  69%|██████▉   | 3000/4358 [00:00<00:00, 6603.27 examples/s]Filter:  92%|█████████▏| 4000/4358 [00:00<00:00, 6611.97 examples/s]Filter: 100%|██████████| 4358/4358 [00:00<00:00, 6603.26 examples/s]
+num decayed parameter tensors: 6, with 6,695,168 parameters
+num non-decayed parameter tensors: 3, with 384 parameters
+using fused AdamW: True
+Iter 0 | LR: 0.0003 | Loss: 0.0
+Iter 100 | Perplexity: 48563.9140625
+Iter 100 | LR: 0.0002933926296998457 | Loss: 9.277980744838711
+Iter 200 | Perplexity: 40433.3203125
+Iter 200 | LR: 0.00027421729424061787 | Loss: 8.67178747057915
+Iter 300 | Perplexity: 33249.140625
+Iter 300 | LR: 0.00024435100905948387 | Loss: 8.397345775365832
+Iter 400 | Perplexity: 28138.33984375
+Iter 400 | LR: 0.00020671729424061788 | Loss: 8.159513407945633
+Iter 500 | Perplexity: 24457.576171875
+Iter 500 | LR: 0.00016499999999999997 | Loss: 7.9548109531402575
+Iter 600 | Perplexity: 21903.775390625
+Iter 600 | LR: 0.0001232827057593821 | Loss: 7.785553085803988
+Iter 700 | Perplexity: 20264.193359375
+Iter 700 | LR: 8.564899094051613e-05 | Loss: 7.661610138416289
+Iter 800 | Perplexity: 19297.431640625
+Iter 800 | LR: 5.5782705759382104e-05 | Loss: 7.56903321146965
+Iter 900 | Perplexity: 18733.3984375
+Iter 900 | LR: 3.660737030015427e-05 | Loss: 7.506480938196185
+Iter 1000 | Perplexity: 18343.62890625
+Iter 1000 | LR: 3e-05 | Loss: 7.465705853700639

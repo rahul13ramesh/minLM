@@ -1,4 +1,5 @@
 import torch
+import os
 import wandb
 import torch.nn.functional as F
 from utils.optimizer import update_cosine_warmup_lr
@@ -7,9 +8,13 @@ from utils.optimizer import update_cosine_warmup_lr
 class Runner:
     def __init__(self, cfg, net, opt, loaders):
         self.cfg = cfg
-        self.net = net
         self.loaders = loaders
         self.optimizer = opt
+
+        if cfg.net.compile:
+            self.net = torch.compile(net)
+        else:
+            self.net = net
 
     def train(self):
         net = self.net
@@ -22,8 +27,10 @@ class Runner:
         total_iters = self.cfg.total_iters
         grad_accumulation = self.cfg.optimizer.grad_accumulation
         use_scaler = self.cfg.optimizer.use_scaler
+
         log_interval = self.cfg.log.log_interval
         eval_interval = self.cfg.log.eval_interval
+        save_interval = self.cfg.log.save_interval
 
         # Initialize optimizer and net
         it = -1
@@ -57,7 +64,7 @@ class Runner:
                     self.update_model(scaler, optimizer)
 
                 # Train loss logging
-                if it % log_interval  == 0:
+                if it % log_interval == 0:
                     self.log_train_loss(it, tr_loss, lr)
                     tr_loss = 0.0
                 else:
@@ -65,7 +72,10 @@ class Runner:
 
                 # Evaluate model perplexity
                 if it % eval_interval == eval_interval - 1:
-                    self.evaluate_model(it, lr)
+                    self.evaluate_model(it+1, lr)
+
+                if it % save_interval == 0:
+                    self.save_model(it)
     
     def compute_loss(self, dat):
         net = self.net
@@ -106,21 +116,26 @@ class Runner:
 
         # Compute perplexity
         net.eval()
+        criterion = torch.nn.CrossEntropyLoss(reduction='none')
 
         # calculate average perplexity
+        # exclude padding tokens (50256)
         total_loss = 0.0
         total_tokens = 0.0
         with torch.no_grad():
             for dat in testloader:
                 dat = self.move_to_device(dat, dev)
                 logits = net(dat[:, :-1])
-                loss = F.cross_entropy(
+
+                loss = criterion(
                     logits.view(-1, logits.size(-1)),
                     dat[:, 1:].flatten())
 
-                tokens = dat.size(0) * dat.size(1)
-                total_loss += loss.item() * tokens
-                total_tokens += tokens
+                mask = dat[:, 1:].flatten() != 50256
+                loss = loss * mask
+
+                total_loss += torch.sum(loss).item()
+                total_tokens += torch.sum(mask).item()
 
         avg_loss = total_loss / total_tokens
         perplexity = torch.exp(torch.tensor(avg_loss)).item()
@@ -141,3 +156,10 @@ class Runner:
 
         if self.cfg.deploy:
             wandb.log({'eval_perplexity': perplexity, 'iter': it})
+
+    def save_model(self, it):
+        if self.cfg.deploy:
+            fpath = os.path.join('./checkpoints/', self.cfg.tag, self.cfg.run_name)
+            os.makedirs(fpath, exist_ok=True)
+            torch.save(self.net.state_dict(), fpath + f'/model_{it}.pth')
+

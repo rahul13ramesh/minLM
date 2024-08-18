@@ -57,6 +57,7 @@ class Runner:
 
                 if it % log_interval  == 0:
                     self.log_train_loss(it, tr_loss, lr)
+                    tr_loss = 0.0
                 else:
                     tr_loss += (loss.item() * grad_accumulation) / log_interval
 

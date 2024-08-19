@@ -45,6 +45,7 @@ class Runner:
         # Initialize optimizer and net
         it = -1
         tr_loss = 0.0
+        updates = 0
         epoch = 0.0
         optimizer.zero_grad(set_to_none=True)
         scaler = torch.GradScaler(dev, enabled=use_scaler)
@@ -167,13 +168,13 @@ class Runner:
             loss = float("inf")
 
         grad_accumulation = self.cfg.optimizer.grad_accumulation
-        bs = self.cfg.data.batch_size
+        bs = self.cfg.data.bs
 
         dt = time.time() - self.cur_time
         self.cur_time = time.time()
         mfu = self.net.estimate_mfu(bs * grad_accumulation, dt)
 
-        if self.running_mfu < -1.0:
+        if self.running_mfu < 0.0:
             self.running_mfu = mfu
         else:
             self.running_mfu = 0.9 * self.running_mfu + 0.1 * mfu

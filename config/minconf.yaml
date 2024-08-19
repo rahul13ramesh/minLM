@@ -12,6 +12,7 @@ data:
   subsample: 0.001
   min_len: 0
   nworkers: 0
+  title: False
 
 net:
   compile: False
@@ -20,7 +21,6 @@ net:
   n_layer: 1
   n_head: 1
   n_embd: 128
-  dropout: 0.0
   bias: False
 
 optimizer:

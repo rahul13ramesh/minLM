@@ -29,7 +29,7 @@ optimizer:
   beta1: 0.9
   beta2: 0.95
   grad_clip: 1.0
-  grad_accumulation: 20
+  grad_accumulation: 1
   ignore_eos: False
   use_scaler: True
   warmup_iters: 0

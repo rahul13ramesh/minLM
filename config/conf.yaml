@@ -22,6 +22,8 @@ net:
   n_head: 12
   n_embd: 1080
   bias: False
+  dropout: 0.0
+  position_encoding: 'learnable' # 'learnable', 'sinusoidal'
 
 optimizer:
   learning_rate: 3e-4

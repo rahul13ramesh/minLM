@@ -10,8 +10,9 @@ data:
   bs: 32
   tokenizer: "openai-community/gpt2"
   subsample: 1.0
-  min_len: 20
+  min_len: 1
   nworkers: 2
+  title: False
 
 net:
   compile: True
@@ -20,7 +21,6 @@ net:
   n_layer: 12
   n_head: 12
   n_embd: 1080
-  dropout: 0.0
   bias: False
 
 optimizer:

@@ -1,4 +1,5 @@
 import torch
+import time
 import os
 import wandb
 import torch.nn.functional as F
@@ -9,6 +10,7 @@ class Runner:
     def __init__(self, cfg, net, opt, loaders):
         self.cfg = cfg
         self.loaders = loaders
+        self.running_mfu = -1.0
         self.optimizer = opt
 
         if cfg.optimizer.ignore_eos:
@@ -43,9 +45,12 @@ class Runner:
         # Initialize optimizer and net
         it = -1
         tr_loss = 0.0
+        updates = 0
         epoch = 0.0
         optimizer.zero_grad(set_to_none=True)
         scaler = torch.GradScaler(dev, enabled=use_scaler)
+
+        self.cur_time = time.time()
 
         net.train()
         net.to(dev)
@@ -161,10 +166,24 @@ class Runner:
     def log_train_loss(self, it, loss, lr):
         if loss == 0.0:
             loss = float("inf")
-        print(f'Iter {it} | LR: {lr} | Loss: {loss}')
+
+        grad_accumulation = self.cfg.optimizer.grad_accumulation
+        bs = self.cfg.data.bs
+
+        dt = time.time() - self.cur_time
+        self.cur_time = time.time()
+        mfu = self.net.estimate_mfu(bs * grad_accumulation, dt)
+
+        if self.running_mfu < 0.0:
+            self.running_mfu = mfu
+        else:
+            self.running_mfu = 0.9 * self.running_mfu + 0.1 * mfu
+
+        print(f'Iter {it} | LR: {lr} | MFU: {self.running_mfu} | time {dt:.2f}s | Loss: {loss}')
 
         if self.cfg.deploy:
-            wandb.log({'train_loss': loss, 'lr': lr, 'iter': it})
+            wandb.log({
+                'train_loss': loss, 'lr': lr, 'iter': it, 'mfu': self.running_mfu})
 
     def log_eval_perplexity(self, it, perplexity):
         print(f'Iter {it} | Perplexity: {perplexity}')

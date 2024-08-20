@@ -12,6 +12,7 @@ data:
   subsample: 0.001
   min_len: 0
   nworkers: 0
+  title: False
 
 net:
   compile: False
@@ -20,7 +21,6 @@ net:
   n_layer: 1
   n_head: 1
   n_embd: 128
-  dropout: 0.0
   bias: False
 
 optimizer:
@@ -29,7 +29,7 @@ optimizer:
   beta1: 0.9
   beta2: 0.95
   grad_clip: 1.0
-  grad_accumulation: 20
+  grad_accumulation: 1
   ignore_eos: False
   use_scaler: True
   warmup_iters: 0

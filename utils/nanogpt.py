@@ -38,9 +38,12 @@ class CausalSelfAttention(nn.Module):
         # output projection
         self.c_proj = nn.Linear(cfg.n_embd, cfg.n_embd, bias=cfg.bias)
 
+        self.resid_dropout = nn.Dropout(cfg.dropout)
+
         # attention heads
         self.n_head = cfg.n_head
         self.n_embd = cfg.n_embd
+        self.dropout = cfg.dropout
 
     def forward(self, x):
         """
@@ -56,11 +59,11 @@ class CausalSelfAttention(nn.Module):
         # efficient attention using Flash Attention CUDA kernels
         y = torch.nn.functional.scaled_dot_product_attention(
             q, k, v, attn_mask=None,
-            dropout_p=0,
+            dropout_p=self.dropout,
             is_causal=True)
 
         y = y.transpose(1, 2).contiguous().view(B, T, C)
-        y = self.c_proj(y)
+        y = self.resid_dropout(self.c_proj(y))
 
         return y
 
@@ -79,11 +82,13 @@ class MLP(nn.Module):
         self.c_fc    = nn.Linear(cfg.n_embd, 4 * cfg.n_embd, bias=cfg.bias)
         self.gelu    = nn.GELU()
         self.c_proj  = nn.Linear(4 * cfg.n_embd, cfg.n_embd, bias=cfg.bias)
+        self.dropout = nn.Dropout(cfg.dropout)
 
     def forward(self, x):
         x = self.c_fc(x)
         x = self.gelu(x)
         x = self.c_proj(x)
+        x = self.dropout(x)
         return x
 
 
@@ -113,9 +118,17 @@ class nanoGPT(nn.Module):
         super().__init__()
         self.cfg = cfg
 
+        if cfg.position_encoding == 'sinusoidal':
+            wpe_encoding = SinusoidalEmbedding(cfg.n_embd, cfg.context_size)
+        elif cfg.position_encoding == 'learnable':
+            wpe_encoding = nn.Embedding(cfg.context_size, cfg.n_embd)
+        else:
+            raise NotImplementedError
+
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(cfg.vocab_size, cfg.n_embd),
-            wpe = nn.Embedding(cfg.context_size, cfg.n_embd),
+            wpe = wpe_encoding,
+            drop = nn.Dropout(cfg.dropout),
             h = nn.ModuleList([Block(cfg) for _ in range(cfg.n_layer)]),
             ln_f = LayerNorm(cfg.n_embd, bias=cfg.bias),
         ))
@@ -178,9 +191,113 @@ class nanoGPT(nn.Module):
         pos = torch.arange(0, t, dtype=torch.long, device=device)
         pos_emb = self.transformer.wpe(pos)
 
-        x = tok_emb + pos_emb
+        x = self.transformer.drop(tok_emb + pos_emb)
         for block in self.transformer.h:
             x = block(x)
         x = self.transformer.ln_f(x)
         logits = self.LM_head(x)
         return logits 
+
+
+class SinusoidalEmbedding(torch.nn.Module):
+    def __init__(self, dim, max_seq_len=5000):
+        super().__init__()
+        self.dim = dim
+        pe = torch.zeros(max_seq_len, dim)
+        position = torch.arange(0, max_seq_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, dim, 2).float() * (-math.log(10000.0) / dim))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        """
+        Args:
+            x: Tensor, shape [batch_size, seq_len, embedding_dim]
+        """
+        return x + self.pe[:, :x.size(1)]
+
+
+class RotaryEmbedding(torch.nn.Module):
+    def __init__(
+        self, dim, max_seq_len, base=10000, precision=torch.half, save_inv_freqs=False
+    ):
+        super().__init__()
+        inv_freq = 1.0 / (base ** (torch.arange(0, dim, 2).float() / dim))
+        self.register_buffer("inv_freq", inv_freq, persistent=save_inv_freqs)
+        self.seq_len_cached = None
+        self.cos_cached = None
+        self.sin_cached = None
+        self.precision = precision
+        self.max_seq_len = max_seq_len
+        self.base = base
+        self.dim = dim
+
+        # precompute cos_cached, sin_cached in fp32
+        cos_cached, sin_cached, inv_freq = self._prepare_cache(
+            max_seq_len, precision, base
+        )
+
+        self.register_buffer("inv_freq", inv_freq, persistent=save_inv_freqs)
+        self.cos_cached = cos_cached
+        self.sin_cached = sin_cached
+
+    def _prepare_cache(self, seq_len, precision, base):
+        # precompute cos_cached, sin_cached in fp32
+        inv_freq = 1.0 / (base ** (torch.arange(0, self.dim, 2).float() / self.dim))
+
+        t = torch.arange(seq_len).type_as(inv_freq)
+        freqs = torch.einsum("i,j->ij", t, inv_freq)
+        emb = torch.cat((freqs, freqs), dim=-1)
+
+        cos_cached = emb.cos()[:, None, None, :]
+        sin_cached = emb.sin()[:, None, None, :]
+
+        return (
+            cos_cached.to(precision),
+            sin_cached.to(precision),
+            inv_freq.to(precision),
+        )
+
+    def forward(self, x, seq_dim=0, seq_len=None):
+        if seq_len is None:
+            seq_len = x.shape[seq_dim]
+
+        assert seq_len <= self.max_seq_len
+
+        if seq_len != self.max_seq_len:
+            # y, z, _ = self._prepare_cache(seq_len, self.precision, self.base)
+            return (
+                self.cos_cached[:seq_len, ...].to(x.device),
+                self.sin_cached[:seq_len, ...].to(x.device),
+            )
+        else:
+            return self.cos_cached.to(x.device), self.sin_cached.to(x.device)
+
+
+# rotary pos emb helpers:
+def rotate_half(x):
+    x1, x2 = x[..., : x.shape[-1] // 2], x[..., x.shape[-1] // 2 :]
+    return torch.cat(
+        (-x2, x1), dim=x1.ndim - 1
+    )  # dim=-1 triggers a bug in earlier torch versions
+
+
+@torch.jit.script
+def apply_rotary_pos_emb(q, k, cos, sin, offset: int = 0):
+    cos, sin = (
+        cos[offset : q.shape[0] + offset, ...],
+        sin[offset : q.shape[0] + offset, ...],
+    )
+    return (q * cos) + (rotate_half(q) * sin), (k * cos) + (rotate_half(k) * sin)
+
+
+def apply_rotary_pos_emb_torch(
+    q, k, cos, sin, offset: int = 0
+):  # jitting fails with bf16
+    cos, sin = (
+        cos[offset : q.shape[0] + offset, ...],
+        sin[offset : q.shape[0] + offset, ...],
+    )
+    return (q * cos) + (rotate_half(q) * sin), (k * cos) + (rotate_half(k) * sin)

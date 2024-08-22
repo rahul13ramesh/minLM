@@ -11,6 +11,7 @@ data:
   val_file: "data/wikitext103/wikitext103_validation.json"
   bs: 32
   nworkers: 2
+  title: False
 
 net:
   compile: True
@@ -18,8 +19,9 @@ net:
   n_layer: 12
   n_head: 12
   n_embd: 1080
-  dropout: 0.0
   bias: False
+  dropout: 0.0
+  position_encoding: 'learnable' # 'learnable', 'sinusoidal'
 
 optimizer:
   learning_rate: 3e-4

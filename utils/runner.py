@@ -14,7 +14,7 @@ class Runner:
         self.optimizer = opt
 
         if cfg.optimizer.ignore_eos:
-            ignore_index = 50256  # ignore EOS token
+            ignore_index = loaders[1].dataset.eos_token
         else:
             ignore_index = -100
 
@@ -137,23 +137,18 @@ class Runner:
         criterion = torch.nn.CrossEntropyLoss(reduction='none')
 
         # calculate average perplexity
-        # exclude padding tokens (50256)
         total_loss = 0.0
         total_tokens = 0.0
-        with torch.no_grad():
+        with torch.inference_mode():
             for dat in testloader:
                 dat = self.move_to_device(dat, dev)
-                logits = net(dat[:, :-1])
+                logits = net(dat[:, :-1])[:, -1]
+                target = dat[:, -1]
 
-                loss = criterion(
-                    logits.view(-1, logits.size(-1)),
-                    dat[:, 1:].flatten())
-
-                mask = dat[:, 1:].flatten() != 50256
-                loss = loss * mask
+                loss = criterion(logits, target)
 
                 total_loss += torch.sum(loss).item()
-                total_tokens += torch.sum(mask).item()
+                total_tokens += dat.size(0)
 
         avg_loss = total_loss / total_tokens
         perplexity = torch.exp(torch.tensor(avg_loss)).item()

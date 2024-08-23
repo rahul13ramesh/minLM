@@ -792,30 +792,3 @@ Iter 296000 | LR: 0.00016782722668425316 | Loss: 0.8131774901598693
 Iter 296500 | LR: 0.00016747386573847387 | Loss: 0.8132095560431482
 Iter 297000 | LR: 0.00016712048783709576 | Loss: 0.8167033407837152
 Iter 297500 | LR: 0.00016676709540213146 | Loss: 0.8168051290512083
-Traceback (most recent call last):
-  File "/home/ubuntu/minLM/train.py", line 30, in <module>
-    main()
-  File "/home/ubuntu/micromamba/envs/minLM/lib/python3.12/site-packages/hydra/main.py", line 94, in decorated_main
-    _run_hydra(
-  File "/home/ubuntu/micromamba/envs/minLM/lib/python3.12/site-packages/hydra/_internal/utils.py", line 394, in _run_hydra
-    _run_app(
-  File "/home/ubuntu/micromamba/envs/minLM/lib/python3.12/site-packages/hydra/_internal/utils.py", line 457, in _run_app
-    run_and_report(
-  File "/home/ubuntu/micromamba/envs/minLM/lib/python3.12/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
-    return func()
-           ^^^^^^
-  File "/home/ubuntu/micromamba/envs/minLM/lib/python3.12/site-packages/hydra/_internal/utils.py", line 458, in <lambda>
-    lambda: hydra.run(
-            ^^^^^^^^^^
-  File "/home/ubuntu/micromamba/envs/minLM/lib/python3.12/site-packages/hydra/_internal/hydra.py", line 119, in run
-    ret = run_job(
-          ^^^^^^^^
-  File "/home/ubuntu/micromamba/envs/minLM/lib/python3.12/site-packages/hydra/core/utils.py", line 186, in run_job
-    ret.return_value = task_function(task_cfg)
-                       ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ubuntu/minLM/train.py", line 24, in main
-    runner.train()
-  File "/home/ubuntu/minLM/utils/runner.py", line 84, in train
-    # Train loss logging
-                    ^^^^^
-KeyboardInterrupt

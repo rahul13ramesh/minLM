@@ -1,4 +1,5 @@
 import torch
+import tqdm
 import time
 import os
 import wandb
@@ -11,15 +12,8 @@ class Runner:
         self.cfg = cfg
         self.loaders = loaders
         self.running_mfu = -1.0
+        self.eval_time = 0.0
         self.optimizer = opt
-
-        if cfg.optimizer.ignore_eos:
-            ignore_index = 50256  # ignore EOS token
-        else:
-            ignore_index = -100
-
-        self.criterion = torch.nn.CrossEntropyLoss(
-            ignore_index=ignore_index)
 
         if cfg.net.compile:
             self.net = torch.compile(net)
@@ -94,6 +88,9 @@ class Runner:
 
                 if it % save_interval == 0:
                     self.save_model(it)
+
+        # Evaluate model on entire validation set
+        self.evaluate_model(it+1, full=True)
     
     def compute_loss(self, dat):
         net = self.net
@@ -101,7 +98,7 @@ class Runner:
         grad_accumulation = self.cfg.optimizer.grad_accumulation
 
         with torch.amp.autocast(device_type=dev,
-                                dtype=torch.bfloat16):
+                                dtype=torch.float16):
             logits = net(dat[:, :-1])
             loss = F.cross_entropy(
                 logits.view(-1, logits.size(-1)),
@@ -110,7 +107,6 @@ class Runner:
         return loss
 
     def move_to_device(self, dat, dev):
-        dat = dat['input_ids']
         dat = dat.to(dev)
         return dat
 
@@ -127,39 +123,41 @@ class Runner:
         scaler.update()
         optimizer.zero_grad(set_to_none=True)
 
-    def evaluate_model(self, it):
+    def evaluate_model(self, it, full=False):
+        start = time.time()
         net = self.net
         dev = self.cfg.device
         testloader = self.loaders[1]
 
         # Compute perplexity
         net.eval()
-        criterion = torch.nn.CrossEntropyLoss(reduction='none')
+        criterion = torch.nn.CrossEntropyLoss()
 
         # calculate average perplexity
-        # exclude padding tokens (50256)
         total_loss = 0.0
         total_tokens = 0.0
-        with torch.no_grad():
-            for dat in testloader:
+        with torch.inference_mode():
+            for idx, dat in enumerate(testloader):
                 dat = self.move_to_device(dat, dev)
-                logits = net(dat[:, :-1])
+                logits = net(dat[:, :-1])[:, -1]
+                target = dat[:, -1]
 
-                loss = criterion(
-                    logits.view(-1, logits.size(-1)),
-                    dat[:, 1:].flatten())
+                loss = criterion(logits, target)
 
-                mask = dat[:, 1:].flatten() != 50256
-                loss = loss * mask
+                batch_size = dat.size(0)
+                total_loss += torch.sum(loss) * batch_size
+                total_tokens += batch_size
 
-                total_loss += torch.sum(loss).item()
-                total_tokens += torch.sum(mask).item()
+                if not full and idx >= self.cfg.log.eval_batches:
+                    break
 
         avg_loss = total_loss / total_tokens
-        perplexity = torch.exp(torch.tensor(avg_loss)).item()
+        perplexity = torch.exp(avg_loss).item()
 
         net.train()
         self.log_eval_perplexity(it, perplexity)
+
+        self.eval_time += time.time() - start
 
         return perplexity
 
@@ -171,6 +169,11 @@ class Runner:
         bs = self.cfg.data.bs
 
         dt = time.time() - self.cur_time
+        dt -= self.eval_time
+
+        dt = max(0, dt)
+        self.eval_time = 0
+
         self.cur_time = time.time()
         mfu = self.net.estimate_mfu(bs * grad_accumulation, dt)
 

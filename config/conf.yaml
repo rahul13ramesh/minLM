@@ -7,16 +7,15 @@ device: "cuda:0"
 total_iters: 600000
 
 data:
+  train_file: "data/wikitext103/wikitext103_train.npy"
+  val_file: "data/wikitext103/wikitext103_validation.npy"
   bs: 32
-  tokenizer: "openai-community/gpt2"
-  subsample: 1.0
-  min_len: 1
   nworkers: 2
   title: False
 
 net:
   compile: True
-  vocab_size: 50258
+  vocab_size: 50257
   context_size: 512
   n_layer: 12
   n_head: 12
@@ -26,22 +25,22 @@ net:
   position_encoding: 'learnable' # 'learnable', 'sinusoidal'
 
 optimizer:
-  learning_rate: 3e-4
-  weight_decay: 1e-1
+  learning_rate: 1e-4
+  min_lr: 2e-5
   beta1: 0.9
   beta2: 0.95
   grad_clip: 1.0
-  grad_accumulation: 20
-  ignore_eos: False
+  weight_decay: 1e-1
+  grad_accumulation: 40
   use_scaler: True
   warmup_iters: 0
   decay_lr: True
-  min_lr: 5e-5
 
 log: 
   eval_interval: 5000
+  eval_batches: 500
   log_interval: 500
-  save_interval: 50000
+  save_interval: 100000
 
  
 # Nested configs. Disable hydra logging

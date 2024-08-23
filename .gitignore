@@ -1,4 +1,4 @@
 __pycache__/
 checkpoints/
 wandb/
-run.sh
+data/

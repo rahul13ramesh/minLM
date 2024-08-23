@@ -212,11 +212,7 @@ class SinusoidalEmbedding(torch.nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        """
-        Args:
-            x: Tensor, shape [batch_size, seq_len, embedding_dim]
-        """
-        return x + self.pe[:, :x.size(1)]
+        return self.pe[:, :x.size(0)]
 
 
 class RotaryEmbedding(torch.nn.Module):

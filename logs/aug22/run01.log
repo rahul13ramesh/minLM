@@ -1,0 +1,30 @@
+{'deploy': True, 'tag': 'aug22', 'run_name': 'run01', 'seed': 0, 'device': 'cuda:0', 'total_iters': 601000, 'data': {'train_file': 'data/wikitext103/wikitext103_train.npy', 'val_file': 'data/wikitext103/wikitext103_validation.npy', 'bs': 24, 'nworkers': 2, 'title': False}, 'net': {'compile': True, 'vocab_size': 50257, 'context_size': 512, 'n_layer': 12, 'n_head': 12, 'n_embd': 1080, 'bias': False, 'dropout': 0.1, 'position_encoding': 'learnable'}, 'optimizer': {'learning_rate': 0.0001, 'min_lr': 2e-05, 'beta1': 0.9, 'beta2': 0.95, 'grad_clip': 1.0, 'weight_decay': 0.1, 'grad_accumulation': 40, 'use_scaler': True, 'warmup_iters': 0, 'decay_lr': True}, 'log': {'eval_interval': 5000, 'eval_batches': 500, 'log_interval': 500, 'save_interval': 100000}}
+r1jod8ws
+num decayed parameter tensors: 50, with 222,792,120 parameters
+num non-decayed parameter tensors: 25, with 27,000 parameters
+using fused AdamW: True
+Iter 0 | Perplexity: 57948.05859375
+Epoch 0.0
+Iter 0 | LR: 0.0001 | MFU: 0.15267219799976944 | time 36.40s | Loss: inf
+Iter 500 | LR: 9.999986337802522e-05 | MFU: 0.13999557332836737 | time 214.51s | Loss: 9.079406979084013
+Iter 1000 | LR: 9.999945351303415e-05 | MFU: 0.1285963600078473 | time 213.70s | Loss: 7.706150296926491
+Iter 1500 | LR: 9.999877040782662e-05 | MFU: 0.11833709635454054 | time 213.70s | Loss: 7.086619813442234
+Iter 2000 | LR: 9.999781406706899e-05 | MFU: 0.10910265290186787 | time 213.79s | Loss: 6.873353995084771
+Iter 2500 | LR: 9.999658449729412e-05 | MFU: 0.100791581184658 | time 213.80s | Loss: 6.708065937757495
+Iter 3000 | LR: 9.99950817069013e-05 | MFU: 0.09331089114077551 | time 213.86s | Loss: 6.538861392736431
+Iter 3500 | LR: 9.999330570615629e-05 | MFU: 0.08657574942474448 | time 214.07s | Loss: 6.39061943888664
+Iter 4000 | LR: 9.999125650719107e-05 | MFU: 0.08051384800105121 | time 214.09s | Loss: 6.258568216562273
+Iter 4500 | LR: 9.998893412400396e-05 | MFU: 0.07506461956782799 | time 213.55s | Loss: 6.13850140213967
+Iter 5000 | Perplexity: 364.6502685546875
+Iter 5000 | LR: 9.998633857245936e-05 | MFU: 0.07015724008872849 | time 213.81s | Loss: 6.048792408704761
+Iter 5500 | LR: 9.998346987028777e-05 | MFU: 0.06574028815262235 | time 213.83s | Loss: 5.960969306230537
+Iter 6000 | LR: 9.998032803708556e-05 | MFU: 0.06176509316179394 | time 213.83s | Loss: 5.885444694757462
+Iter 6500 | LR: 9.99769130943149e-05 | MFU: 0.05818932183791951 | time 213.67s | Loss: 5.817788388729098
+Iter 7000 | LR: 9.99732250653036e-05 | MFU: 0.054969691957812046 | time 213.79s | Loss: 5.757496752738953
+Iter 7500 | LR: 9.996926397524497e-05 | MFU: 0.05207158440769271 | time 213.83s | Loss: 5.705178347826002
+Iter 8000 | LR: 9.996502985119759e-05 | MFU: 0.049464865257113404 | time 213.70s | Loss: 5.650766968727108
+Iter 8500 | LR: 9.996052272208518e-05 | MFU: 0.04711849877929336 | time 213.72s | Loss: 5.60672114729881
+Iter 9000 | LR: 9.995574261869638e-05 | MFU: 0.045006275775858993 | time 213.76s | Loss: 5.551714060306554
+Iter 9500 | LR: 9.995068957368457e-05 | MFU: 0.04310535298124434 | time 213.76s | Loss: 5.501442781686785
+Iter 10000 | Perplexity: 200.54405212402344
+Iter 10000 | LR: 9.994536362156758e-05 | MFU: 0.04139438579807129 | time 213.77s | Loss: 5.460142781734467

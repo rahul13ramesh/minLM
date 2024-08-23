@@ -120,10 +120,13 @@ class nanoGPT(nn.Module):
 
         if cfg.position_encoding == 'sinusoidal':
             wpe_encoding = SinusoidalEmbedding(cfg.n_embd, cfg.context_size)
+            self.te_scale = math.sqrt(self.cfg.n_embd)
         elif cfg.position_encoding == 'learnable':
             wpe_encoding = nn.Embedding(cfg.context_size, cfg.n_embd)
+            self.te_scale = 1
         else:
             raise NotImplementedError
+
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(cfg.vocab_size, cfg.n_embd),
@@ -169,8 +172,9 @@ class nanoGPT(nn.Module):
         The token embeddings would too, except due to the parameter sharing these
         params are actually used as weights in the final layer, so we include them.
         """
+        # Exclude sinusoidal embedding
         n_params = sum(p.numel() for p in self.parameters())
-        if non_embedding:
+        if hasattr(self.transformer.wpe, 'weight') and  non_embedding:
             n_params -= self.transformer.wpe.weight.numel()
         return n_params
 
@@ -187,9 +191,9 @@ class nanoGPT(nn.Module):
         b, t = idx.size()
 
         # Compute position/token embeddings
-        tok_emb = self.transformer.wte(idx)
+        tok_emb = self.transformer.wte(idx) * self.te_scale
         pos = torch.arange(0, t, dtype=torch.long, device=device)
-        pos_emb = self.transformer.wpe(pos)
+        pos_emb = self.transformer.wpe(pos) 
 
         x = self.transformer.drop(tok_emb + pos_emb)
         for block in self.transformer.h:
@@ -204,13 +208,18 @@ class SinusoidalEmbedding(torch.nn.Module):
         super().__init__()
         self.dim = dim
         pe = torch.zeros(max_seq_len, dim)
-        position = torch.arange(0, max_seq_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, dim, 2).float() * (-math.log(10000.0) / dim))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
+
+        position = torch.arange(0, max_seq_len).unsqueeze(1).float()
+
+        freq = torch.exp(torch.arange(0, dim, 2).float() * -(math.log(10000.0) / dim))
+
+
+        pe[:, 0::2] = torch.sin(position * freq)
+        pe[:, 1::2] = torch.cos(position * freq)
         pe = pe.unsqueeze(0)
         self.register_buffer('pe', pe)
 
+    @torch.no_grad
     def forward(self, x):
         return self.pe[:, :x.size(0)]
 

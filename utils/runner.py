@@ -98,7 +98,7 @@ class Runner:
         grad_accumulation = self.cfg.optimizer.grad_accumulation
 
         with torch.amp.autocast(device_type=dev,
-                                dtype=torch.float16):
+                                dtype=torch.bfloat16):
             logits = net(dat[:, :-1])
             loss = F.cross_entropy(
                 logits.view(-1, logits.size(-1)),

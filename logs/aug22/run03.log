@@ -1,0 +1,129 @@
+{'deploy': True, 'tag': 'aug22', 'run_name': 'run03', 'seed': 0, 'device': 'cuda:1', 'total_iters': 601000, 'data': {'train_file': 'data/wikitext103/wikitext103_train.npy', 'val_file': 'data/wikitext103/wikitext103_validation.npy', 'bs': 24, 'nworkers': 2, 'title': False}, 'net': {'compile': True, 'vocab_size': 50257, 'context_size': 512, 'n_layer': 12, 'n_head': 12, 'n_embd': 1080, 'bias': False, 'dropout': 0.4, 'position_encoding': 'learnable'}, 'optimizer': {'learning_rate': 0.0001, 'min_lr': 2e-05, 'beta1': 0.9, 'beta2': 0.95, 'grad_clip': 1.0, 'weight_decay': 0.1, 'grad_accumulation': 40, 'use_scaler': True, 'warmup_iters': 0, 'decay_lr': True}, 'log': {'eval_interval': 5000, 'eval_batches': 500, 'log_interval': 500, 'save_interval': 100000}}
+60neglai
+num decayed parameter tensors: 50, with 222,792,120 parameters
+num non-decayed parameter tensors: 25, with 27,000 parameters
+using fused AdamW: True
+--Call--
+> [0;32m/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py[0m(1062)[0;36m__call__[0;34m()[0m
+[0;32m   1061 [0;31m[0;34m[0m[0m
+[0m[0;32m-> 1062 [0;31m    [0;32mdef[0m [0m__call__[0m[0;34m([0m[0mself[0m[0;34m,[0m [0mframe[0m[0;34m,[0m [0mcache_entry[0m[0;34m,[0m [0mframe_state[0m[0;34m)[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+[0m[0;32m   1063 [0;31m        [0;32massert[0m [0mframe_state[0m [0;32mis[0m [0;32mnot[0m [0;32mNone[0m[0;34m[0m[0;34m[0m[0m
+[0m
+ipdb> {'deploy': True, 'tag': 'aug22', 'run_name': 'run03', 'seed': 0, 'device': 'cuda:0', 'total_iters': 601000, 'data': {'train_file': 'data/wikitext103/wikitext103_train.npy', 'val_file': 'data/wikitext103/wikitext103_validation.npy', 'bs': 24, 'nworkers': 2, 'title': False}, 'net': {'compile': True, 'vocab_size': 50257, 'context_size': 512, 'n_layer': 12, 'n_head': 12, 'n_embd': 1080, 'bias': False, 'dropout': 0.4, 'position_encoding': 'learnable'}, 'optimizer': {'learning_rate': 0.0001, 'min_lr': 2e-05, 'beta1': 0.9, 'beta2': 0.95, 'grad_clip': 1.0, 'weight_decay': 0.1, 'grad_accumulation': 40, 'use_scaler': True, 'warmup_iters': 0, 'decay_lr': True}, 'log': {'eval_interval': 5000, 'eval_batches': 500, 'log_interval': 500, 'save_interval': 100000}}
+s38kn5uq
+num decayed parameter tensors: 50, with 222,792,120 parameters
+num non-decayed parameter tensors: 25, with 27,000 parameters
+using fused AdamW: True
+Iter 0 | Perplexity: 57935.625
+Epoch 0.0
+Error executing job with overrides: ['deploy=True', 'run_name=run03', 'device=cuda:0', 'tag=aug22', 'optimizer.grad_accumulation=40', 'total_iters=601000', 'data.bs=24', 'net.position_encoding=learnable', 'net.dropout=0.4', 'net.compile=True']
+Traceback (most recent call last):
+  File "/home/rahulram/minLM/train.py", line 24, in main
+    runner.train()
+  File "/home/rahulram/minLM/utils/runner.py", line 72, in train
+    scaler.scale(loss).backward()
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/torch/_tensor.py", line 521, in backward
+    torch.autograd.backward(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/torch/autograd/__init__.py", line 289, in backward
+    _engine_run_backward(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/torch/autograd/graph.py", line 768, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.30 GiB. GPU 0 has a total capacity of 23.65 GiB of which 818.06 MiB is free. Process 2622368 has 9.67 GiB memory in use. Including non-PyTorch memory, this process has 13.16 GiB memory in use. Of the allocated memory 10.82 GiB is allocated by PyTorch, and 1.89 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+{'deploy': True, 'tag': 'aug22', 'run_name': 'run03', 'seed': 0, 'device': 'cuda:0', 'total_iters': 601000, 'data': {'train_file': 'data/wikitext103/wikitext103_train.npy', 'val_file': 'data/wikitext103/wikitext103_validation.npy', 'bs': 24, 'nworkers': 2, 'title': False}, 'net': {'compile': True, 'vocab_size': 50257, 'context_size': 512, 'n_layer': 12, 'n_head': 12, 'n_embd': 1080, 'bias': False, 'dropout': 0.4, 'position_encoding': 'learnable'}, 'optimizer': {'learning_rate': 0.0001, 'min_lr': 2e-05, 'beta1': 0.9, 'beta2': 0.95, 'grad_clip': 1.0, 'weight_decay': 0.1, 'grad_accumulation': 40, 'use_scaler': True, 'warmup_iters': 0, 'decay_lr': True}, 'log': {'eval_interval': 5000, 'eval_batches': 500, 'log_interval': 500, 'save_interval': 100000}}
+uvvzzhn6
+num decayed parameter tensors: 50, with 222,792,120 parameters
+num non-decayed parameter tensors: 25, with 27,000 parameters
+using fused AdamW: True
+Traceback (most recent call last):
+  File "/home/rahulram/minLM/train.py", line 30, in <module>
+    main()
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/main.py", line 94, in decorated_main
+    _run_hydra(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/utils.py", line 394, in _run_hydra
+    _run_app(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/utils.py", line 457, in _run_app
+    run_and_report(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
+    return func()
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/utils.py", line 458, in <lambda>
+    lambda: hydra.run(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/hydra.py", line 119, in run
+    ret = run_job(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/core/utils.py", line 186, in run_job
+    ret.return_value = task_function(task_cfg)
+  File "/home/rahulram/minLM/train.py", line 24, in main
+    runner.train()
+  File "/home/rahulram/minLM/utils/runner.py", line 52, in train
+    self.evaluate_model(0)
+  File "/home/rahulram/minLM/utils/runner.py", line 141, in evaluate_model
+    dat = self.move_to_device(dat, dev)
+  File "/home/rahulram/minLM/utils/runner.py", line 110, in move_to_device
+    dat = dat.to(dev)
+KeyboardInterrupt
+Exception ignored in atexit callback: <function _Manager._atexit_setup.<locals>.<lambda> at 0x7a4222d99e10>
+Traceback (most recent call last):
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/wandb/sdk/wandb_manager.py", line 156, in <lambda>
+    self._atexit_lambda = lambda: self._atexit_teardown()
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/wandb/sdk/wandb_manager.py", line 165, in _atexit_teardown
+    self._teardown(exit_code)
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/wandb/sdk/wandb_manager.py", line 176, in _teardown
+    result = self._service.join()
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/wandb/sdk/service/service.py", line 263, in join
+    ret = self._internal_proc.wait()
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/subprocess.py", line 1209, in wait
+    return self._wait(timeout=timeout)
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/subprocess.py", line 1959, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/subprocess.py", line 1917, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt: 
+{'deploy': True, 'tag': 'aug22', 'run_name': 'run03', 'seed': 0, 'device': 'cuda:1', 'total_iters': 601000, 'data': {'train_file': 'data/wikitext103/wikitext103_train.npy', 'val_file': 'data/wikitext103/wikitext103_validation.npy', 'bs': 24, 'nworkers': 2, 'title': False}, 'net': {'compile': True, 'vocab_size': 50257, 'context_size': 512, 'n_layer': 12, 'n_head': 12, 'n_embd': 1080, 'bias': False, 'dropout': 0.4, 'position_encoding': 'learnable'}, 'optimizer': {'learning_rate': 0.0001, 'min_lr': 2e-05, 'beta1': 0.9, 'beta2': 0.95, 'grad_clip': 1.0, 'weight_decay': 0.1, 'grad_accumulation': 40, 'use_scaler': True, 'warmup_iters': 0, 'decay_lr': True}, 'log': {'eval_interval': 5000, 'eval_batches': 500, 'log_interval': 500, 'save_interval': 100000}}
+smva35ty
+num decayed parameter tensors: 50, with 222,792,120 parameters
+num non-decayed parameter tensors: 25, with 27,000 parameters
+using fused AdamW: True
+Iter 0 | Perplexity: 57935.625
+Epoch 0.0
+Iter 0 | LR: 0.0001 | MFU: 0.23055988629601434 | time 24.10s | Loss: inf
+Iter 500 | LR: 9.999986337802522e-05 | MFU: 0.21384919249463383 | time 87.58s | Loss: 0.7921892536241641
+Iter 1000 | LR: 9.999945351303415e-05 | MFU: 0.19886459391698533 | time 86.82s | Loss: 0.00012018342449664477
+Iter 1500 | LR: 9.999877040782662e-05 | MFU: 0.18537871477656334 | time 86.82s | Loss: 7.66892618412385e-05
+Iter 2000 | LR: 9.999781406706899e-05 | MFU: 0.17324138781699222 | time 86.82s | Loss: 5.835715241119042e-05
+Iter 2500 | LR: 9.999658449729412e-05 | MFU: 0.16231886751610652 | time 86.81s | Loss: 4.883097156380242e-05
+Iter 3000 | LR: 9.99950817069013e-05 | MFU: 0.1524861567011331 | time 86.84s | Loss: 4.210659173622844e-05
+Iter 3500 | LR: 9.999330570615629e-05 | MFU: 0.14363943220862432 | time 86.80s | Loss: 3.622396088303503e-05
+Iter 4000 | LR: 9.999125650719107e-05 | MFU: 0.13567672083774718 | time 86.81s | Loss: 3.072320444061916e-05
+Iter 4500 | LR: 9.998893412400396e-05 | MFU: 0.12850976260838373 | time 86.82s | Loss: 2.5523348504066208e-05
+Iter 5000 | Perplexity: 5484333056.0
+Iter 5000 | LR: 9.998633857245936e-05 | MFU: 0.12205868527619401 | time 86.83s | Loss: 2.0736454816869807e-05
+Iter 5500 | LR: 9.998346987028777e-05 | MFU: 0.1162484913497668 | time 86.89s | Loss: 1.648443897465768e-05
+Iter 6000 | LR: 9.998032803708556e-05 | MFU: 0.1110238316197211 | time 86.83s | Loss: 1.289392994749506e-05
+Iter 6500 | LR: 9.99769130943149e-05 | MFU: 0.10632211156656848 | time 86.82s | Loss: 9.921339247966904e-06
+Iter 7000 | LR: 9.99732250653036e-05 | MFU: 0.10208917401393386 | time 86.84s | Loss: 7.553186835593811e-06
+Iter 7500 | LR: 9.996926397524497e-05 | MFU: 0.09828034269845616 | time 86.83s | Loss: 5.703741776414973e-06
+Iter 8000 | LR: 9.996502985119759e-05 | MFU: 0.09485183727500517 | time 86.83s | Loss: 4.290733846232798e-06
+Iter 8500 | LR: 9.996052272208518e-05 | MFU: 0.09175773846517633 | time 86.95s | Loss: 5.303757505755734
+Traceback (most recent call last):
+  File "/home/rahulram/minLM/train.py", line 30, in <module>
+    main()
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/main.py", line 94, in decorated_main
+    _run_hydra(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/utils.py", line 394, in _run_hydra
+    _run_app(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/utils.py", line 457, in _run_app
+    run_and_report(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
+    return func()
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/utils.py", line 458, in <lambda>
+    lambda: hydra.run(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/_internal/hydra.py", line 119, in run
+    ret = run_job(
+  File "/home/rahulram/micromamba/envs/llm/lib/python3.10/site-packages/hydra/core/utils.py", line 186, in run_job
+    ret.return_value = task_function(task_cfg)
+  File "/home/rahulram/minLM/train.py", line 24, in main
+    runner.train()
+  File "/home/rahulram/minLM/utils/runner.py", line 83, in train
+    else:
+KeyboardInterrupt
